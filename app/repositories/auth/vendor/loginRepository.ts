@@ -1,10 +1,11 @@
+import { LoginServerResponse } from "@/app/actions/auth/vendor/login-action";
 import { LoginRequest } from "@/app/services/auth/vendor/login-service";
 import { api } from "@/lib/api";
 
-export const loginRepository = async (data: LoginRequest) => {
+export const loginRepository = async (request: LoginRequest): Promise<ApiResponse<LoginServerResponse>> => {
     try {
-        const res = await api.post('/auth/login', data);
-        return res;
+        const { data } = await api.post<ApiResponse<LoginServerResponse>>('/auth/login', request);
+        return data;
     } catch (error) {
         throw Error(`Got error ${error}`)
     }

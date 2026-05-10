@@ -3,27 +3,31 @@
 import { LoginRequest, loginService } from "@/app/services/auth/vendor/login-service";
 import { setAuthCookie } from "@/lib/session";
 
-type LoginResponse = {
-    name: string;
-    email: string;
-    hasMemberships: boolean;
+export type LoginServerResponse = {
+    token: string;
+    hasMembership: boolean;
+    user: {
+        name: string;
+        email: string;
+        phone?: string;
+    };
 }
 
-export const loginAction = async (formData: LoginRequest): Promise<LoginResponse> => {
+export const loginAction = async (formData: LoginRequest): Promise<ApiResponse<LoginServerResponse>> => {
     const res = await loginService(formData);
+    if (!res.success) {
+        return res;
+    }
     const token = res?.payload.token;
     const authInfo = res?.payload.user;
 
     const collection = {
         token: token,
         user: authInfo,
-        hasMemberships: res.payload.memberships.length > 0 ? true : false
+        hasMemberships: res?.payload.hasMembership
     }
 
-    const cookies = await setAuthCookie(collection)
-    return {
-        name: collection.user.name,
-        email: collection.user.email,
-        hasMemberships: collection.hasMemberships
-    };
+    const cookies = await setAuthCookie(collection);
+
+    return res;
 }

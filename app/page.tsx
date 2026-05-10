@@ -26,17 +26,18 @@ export default function Home() {
   const handleSubmit = async () => {
 
     const res = await loginAction(data);
-    console.log(res)
-    if(res.hasMemberships){
+
+    if (res.success && res.payload.hasMembership) {
       router.push('/choose-workspace')
-    }else{
+    } else {
       router.push('/dashboard')
     }
+
+    return res;
   }
 
-
-
-  const [errors, action, isPending] = useActionState(handleSubmit, null);
+  const [error, action, isPending] = useActionState(handleSubmit, null);
+  console.log(error)
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -50,6 +51,7 @@ export default function Home() {
             onChange={handleChange}
           />
         </div>
+        <p>{error?.message}</p>
 
         <div className="space-y-2">
           <label className="block" htmlFor="password">Password</label>
