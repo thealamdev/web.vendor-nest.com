@@ -24,7 +24,6 @@ export default function Home() {
   }
 
   const handleSubmit = async () => {
-
     const res = await loginAction(data);
 
     if (res.success && res.payload.hasMembership) {
@@ -37,24 +36,23 @@ export default function Home() {
   }
 
   const [error, action, isPending] = useActionState(handleSubmit, null);
-  console.log(error)
 
   return (
     <div className="flex justify-center items-center h-screen">
       <form action={action} className="bg-[#333] w-2xl p-5 space-y-4 rounded-xl">
         <h3 className="text-lg font-semibold text-gray-50 text-center">Login</h3>
         <div className="space-y-2">
-          <label className="block" htmlFor="email">Email</label>
+          <label className="block text-white" htmlFor="email">Email</label>
           <Input
             placeholder="Enter your email"
             name="email"
             onChange={handleChange}
           />
         </div>
-        <p>{error?.message}</p>
+        <p className="text-red-500">{error?.message}</p>
 
         <div className="space-y-2">
-          <label className="block" htmlFor="password">Password</label>
+          <label className="block text-white" htmlFor="password">Password</label>
           <Input
             placeholder="Enter your password"
             name="password"
