@@ -1,18 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CookieEnum } from "./app/enums/CookieEnum";
 
 export async function proxy(request: NextRequest) {
-    const cookieStore = request.cookies.get('auth_cookie')?.value;
-    let parseCookie: any;
+    const authCookie = request.cookies.get(CookieEnum.AUTH_COOKIE)?.value;
+    const organizationContextCookie = request.cookies.get(CookieEnum.ORGANIZATION_CONTEXT)?.value;
 
-    cookieStore && (parseCookie = JSON.parse(cookieStore));
-    const hasToken = parseCookie?.token;
-    const hasMemberships = parseCookie?.hasMemberships;
+    let parseAuthCookie: any = null;
+    let parseOrganizationContextCookie: any = null;
+
+    try {
+        if (authCookie) {
+            parseAuthCookie = JSON.parse(authCookie);
+        }
+        if (organizationContextCookie) {
+            parseOrganizationContextCookie = JSON.parse(organizationContextCookie);
+        }
+    } catch (e) {
+        console.error("Cookie parse error", e);
+    }
+
+    const hasToken = parseAuthCookie?.token;
+    const hasMemberships = parseAuthCookie?.hasMemberships;
+    const hasOrganizationContext = parseOrganizationContextCookie;
+
+    console.log(hasOrganizationContext);
     const { pathname } = request.nextUrl;
 
-    console.log(parseCookie);
+    // const publisPaths = [
+    //     '/',
+    // ];
+
+    // const protectedPaths = [
+    //     '/choose-workspace',
+    //     '/dashboard'
+    // ];
+
+    // protectedPaths.some((path: string) => {
+    //     console.log(path)
+    // })
 
     if (!hasToken) {
-        if(pathname !== '/'){
+        if (pathname !== '/') {
             return NextResponse.redirect(new URL('/', request.url))
         }
         return NextResponse.next();
@@ -25,7 +53,7 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    if (hasToken && hasMemberships) {
+    if (hasToken && hasOrganizationContext) {
         if (pathname === '/' || pathname === '/choose-workspace') {
             return NextResponse.redirect(new URL('/dashboard', request.url));
         }

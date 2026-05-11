@@ -1,7 +1,8 @@
 "use server";
 
+import { CookieEnum } from "@/app/enums/CookieEnum";
 import { LoginRequest, loginService } from "@/app/services/auth/vendor/login-service";
-import { setAuthCookie } from "@/lib/session";
+import { setCookie } from "@/lib/session";
 
 export type LoginServerResponse = {
     token: string;
@@ -27,7 +28,7 @@ export const loginAction = async (formData: LoginRequest): Promise<ApiResponse<L
         hasMemberships: res?.payload.hasMembership
     }
 
-    const cookies = await setAuthCookie(collection);
+    const cookies = await setCookie(CookieEnum.AUTH_COOKIE, collection);
 
     return res;
 }
