@@ -1,6 +1,6 @@
 "use client"
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
-import { PermissionContext } from '../context/PermissionContext'
+import React, { ReactNode, useEffect, useState } from 'react'
+import { RolePermissionContext } from '../context/RolePermissionContext'
 import { api } from '@/lib/api'
 
 interface PageProps {
@@ -12,18 +12,21 @@ export default function PermissionProvider({
 }: PageProps) {
 
   const [activeRole, setActiveRole] = useState('');
+  const [roles, setRoles] = useState<[]>([]);
   const [permissions, setPermissions] = useState([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchRoles = async () => {
       const response = await api.get('/user-management/role/getAll');
-      setActiveRole(response?.data?.payload[0]?.id ?? '')
+      setActiveRole(response?.data?.payload[0]?.id ?? '');
+      setRoles(response?.data?.payload);
     }
     fetchRoles()
   }, [])
 
   useEffect(() => {
+    if (!activeRole) return;
     try {
       setLoading(false);
       const fetchPermission = async () => {
@@ -39,15 +42,21 @@ export default function PermissionProvider({
       setLoading(false)
     }
 
-  }, [activeRole])
+  }, [activeRole]);
 
+  const changeRole = (roleId: string) => {
+    setActiveRole(roleId);
+  };
 
   return (
-    <PermissionContext.Provider value={{
+    <RolePermissionContext.Provider value={{
+      roleId: activeRole,
+      roles: roles,
       permissions: permissions,
-      isLoading: isLoading
+      isLoading: isLoading,
+      changeRole
     }}>
       <div>{children}</div>
-    </PermissionContext.Provider>
+    </RolePermissionContext.Provider>
   )
 }

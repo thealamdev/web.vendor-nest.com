@@ -1,7 +1,7 @@
 "use client";
 
 import { storeWorkspaceAction } from "@/app/actions/choose-workspace/storeWorkspaceAction";
-import { chooseWorkspaceService, storeWorkspaceService } from "@/app/services/choose-workspace/choose-workspace-service";
+import { chooseWorkspaceService } from "@/app/services/choose-workspace/choose-workspace-service";
 import { Building2, Mail, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

@@ -1,3 +1,5 @@
-import { PermissionContext } from "./PermissionContext"
+import { RolePermissionContext } from "./RolePermissionContext"
 
-export { PermissionContext }
+export { 
+    RolePermissionContext
+ }

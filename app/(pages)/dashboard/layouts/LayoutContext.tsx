@@ -21,10 +21,9 @@ import {
 } from "lucide-react";
 
 import { deleteCookie } from "@/lib/session";
-import { CookieEnum } from "@/app/enums/CookieEnum";
 import OrganizationSwitcher from "../components/OrganizationSwitcher";
-import { PermissionContext } from "@/app/context";
-import { PermissionResponse } from "@/app/context/PermissionContext";
+import { RolePermissionContext, RolePermissionResponse } from '@/app/context/RolePermissionContext';
+import { CookieEnum } from "@/app/enums/CookieEnum";
 
 export default function LayoutContext({
     children,
@@ -41,7 +40,7 @@ export default function LayoutContext({
 
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
-    const { permissions, isLoading } = useContext<PermissionResponse>(PermissionContext);
+    const { roles, permissions, isLoading, changeRole } = useContext<RolePermissionResponse>(RolePermissionContext);
 
     const sidebarMenus = [
         { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: 'dashboard.view' },
@@ -51,13 +50,10 @@ export default function LayoutContext({
         { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
     ];
 
-    const roles = [
-        { id: 1, name: "Admin" },
-        { id: 2, name: "Manager" },
-        { id: 3, name: "Viewer" },
-    ];
-
     const [currentRole, setCurrentRole] = useState(roles[0]);
+    useEffect(() => {
+        setCurrentRole(roles[0]);
+    }, [roles])
 
     useEffect(() => {
 
@@ -92,11 +88,10 @@ export default function LayoutContext({
         router.push("/");
     };
 
-    const changeRole = (role: any) => {
+    const handleChangeRole = (role: any) => {
+        changeRole(role.id)
         setCurrentRole(role);
         setShowRoleMenu(false);
-
-        // later: API + router.refresh()
     };
 
     return (
@@ -192,7 +187,7 @@ export default function LayoutContext({
                                         Shah Alam
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        {currentRole.name}
+                                        {isLoading ? 'loading...': currentRole?.name}
                                     </p>
                                 </div>
 
@@ -249,12 +244,12 @@ export default function LayoutContext({
 
                                                 {roles.map((role) => {
 
-                                                    const active = role.id === currentRole.id;
+                                                    const active = role.id === currentRole?.id;
 
                                                     return (
                                                         <button
                                                             key={role.id}
-                                                            onClick={() => changeRole(role)}
+                                                            onClick={() => handleChangeRole(role)}
                                                             className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50"
                                                         >
                                                             <span className="text-sm">

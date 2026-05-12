@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 import LayoutContext from './layouts/LayoutContext'
-import PermissionProvider from '@/app/providers/PermissionProvider';
+import PermissionProvider from '@/app/providers/RolePermissionProvider';
 
 export default function DashbaordLayout({
     children,
