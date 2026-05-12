@@ -1,0 +1,286 @@
+"use client";
+
+import { ReactNode, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+
+import {
+    LayoutDashboard,
+    CalendarDays,
+    Users,
+    Settings,
+    LogOut,
+    Bell,
+    Search,
+    ChevronDown,
+    User,
+    CreditCard,
+    Check,
+    ChevronRight,
+} from "lucide-react";
+
+import { deleteCookie } from "@/lib/session";
+import { CookieEnum } from "@/app/enums/CookieEnum";
+import OrganizationSwitcher from "../components/OrganizationSwitcher";
+
+export default function LayoutContext({
+    children,
+}: {
+    children: ReactNode;
+}) {
+
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const [showNotification, setShowNotification] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showRoleMenu, setShowRoleMenu] = useState(false);
+
+    const notificationRef = useRef<HTMLDivElement>(null);
+    const profileRef = useRef<HTMLDivElement>(null);
+
+    const sidebarMenus = [
+        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { title: "Events", href: "/dashboard/products", icon: CalendarDays },
+        { title: "Members", href: "/dashboard/members", icon: Users },
+        { title: "Settings", href: "/dashboard/settings", icon: Settings },
+    ];
+
+    const roles = [
+        { id: 1, name: "Admin" },
+        { id: 2, name: "Manager" },
+        { id: 3, name: "Viewer" },
+    ];
+
+    const [currentRole, setCurrentRole] = useState(roles[0]);
+
+    useEffect(() => {
+
+        const handleOutsideClick = (e: MouseEvent) => {
+
+            if (
+                notificationRef.current &&
+                !notificationRef.current.contains(e.target as Node)
+            ) {
+                setShowNotification(false);
+            }
+
+            if (
+                profileRef.current &&
+                !profileRef.current.contains(e.target as Node)
+            ) {
+                setShowProfileMenu(false);
+                setShowRoleMenu(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
+    }, []);
+
+    const handleLogout = async () => {
+        await deleteCookie(CookieEnum.AUTH_COOKIE);
+        await deleteCookie(CookieEnum.ORGANIZATION_CONTEXT);
+        router.push("/");
+    };
+
+    const changeRole = (role: any) => {
+        setCurrentRole(role);
+        setShowRoleMenu(false);
+
+        // later: API + router.refresh()
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex">
+
+            {/* Sidebar */}
+            <aside className="hidden lg:flex w-[270px] bg-white border-r border-gray-200 flex-col">
+
+                <OrganizationSwitcher />
+
+                <nav className="flex-1 p-4 space-y-2">
+                    {sidebarMenus.map((menu) => {
+
+                        const Icon = menu.icon;
+                        const isActive = pathname === menu.href;
+
+                        return (
+                            <Link
+                                key={menu.href}
+                                href={menu.href}
+                                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition
+                                ${isActive
+                                        ? "bg-gray-900 text-white"
+                                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                    }`}
+                            >
+                                <Icon size={18} />
+                                {menu.title}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="border-t border-gray-200 p-4">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition"
+                    >
+                        <LogOut size={18} />
+                        Logout
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+
+                {/* Header */}
+                <header className="h-16 bg-white border-b border-gray-200 px-4 lg:px-8 flex items-center justify-between">
+
+                    {/* Search */}
+                    <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-xl px-3 h-11 w-[320px]">
+                        <Search size={18} className="text-gray-500" />
+                        <input
+                            className="bg-transparent outline-none w-full text-sm"
+                            placeholder="Search..."
+                        />
+                    </div>
+
+                    {/* Right */}
+                    <div className="flex items-center gap-4 ml-auto">
+
+                        {/* Notification */}
+                        <div ref={notificationRef}>
+                            <button
+                                onClick={() => setShowNotification(!showNotification)}
+                                className="relative h-11 w-11 rounded-xl border border-gray-200 flex items-center justify-center"
+                            >
+                                <Bell size={18} />
+                                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full" />
+                            </button>
+                        </div>
+
+                        {/* Profile */}
+                        <div className="relative" ref={profileRef}>
+
+                            {/* Profile Button */}
+                            <button
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="flex items-center gap-3 px-2 py-2 hover:bg-gray-100 rounded-xl"
+                            >
+                                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    SA
+                                </div>
+
+                                <div className="hidden md:block text-left">
+                                    <p className="text-sm font-semibold">
+                                        Shah Alam
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        {currentRole.name}
+                                    </p>
+                                </div>
+
+                                <ChevronDown size={18} />
+                            </button>
+
+                            {/* Dropdown */}
+                            {showProfileMenu && (
+                                <div className="absolute right-0 top-16 w-[260px] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden z-50">
+
+                                    {/* User Info */}
+                                    <div className="p-4 border-b">
+                                        <h4 className="text-sm font-semibold">
+                                            Shah Alam
+                                        </h4>
+                                        <p className="text-xs text-gray-500">
+                                            shahalam@gmail.com
+                                        </p>
+                                    </div>
+
+                                    <div className="p-2 space-y-1">
+
+                                        {/* Profile */}
+                                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100">
+                                            <User size={18} />
+                                            Profile
+                                        </button>
+
+                                        {/* Billing */}
+                                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100">
+                                            <CreditCard size={18} />
+                                            Billing
+                                        </button>
+
+                                        {/* ROLE TOGGLE */}
+                                        <button
+                                            onClick={() => setShowRoleMenu(!showRoleMenu)}
+                                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-100"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <User size={18} />
+                                                <span>Role</span>
+                                            </div>
+
+                                            <ChevronRight
+                                                size={16}
+                                                className={`transition ${showRoleMenu ? "rotate-90" : ""}`}
+                                            />
+                                        </button>
+
+                                        {/* Nested Role List */}
+                                        {showRoleMenu && (
+                                            <div className="ml-6 space-y-1">
+
+                                                {roles.map((role) => {
+
+                                                    const active = role.id === currentRole.id;
+
+                                                    return (
+                                                        <button
+                                                            key={role.id}
+                                                            onClick={() => changeRole(role)}
+                                                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50"
+                                                        >
+                                                            <span className="text-sm">
+                                                                {role.name}
+                                                            </span>
+
+                                                            {active && (
+                                                                <Check size={14} className="text-green-600" />
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Logout */}
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50"
+                                        >
+                                            <LogOut size={18} />
+                                            Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+                </header>
+
+                {/* Content */}
+                <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
+}
