@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -17,11 +17,14 @@ import {
     CreditCard,
     Check,
     ChevronRight,
+    Files,
 } from "lucide-react";
 
 import { deleteCookie } from "@/lib/session";
 import { CookieEnum } from "@/app/enums/CookieEnum";
 import OrganizationSwitcher from "../components/OrganizationSwitcher";
+import { PermissionContext } from "@/app/context";
+import { PermissionResponse } from "@/app/context/PermissionContext";
 
 export default function LayoutContext({
     children,
@@ -38,12 +41,14 @@ export default function LayoutContext({
 
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
+    const { permissions, isLoading } = useContext<PermissionResponse>(PermissionContext);
 
     const sidebarMenus = [
-        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { title: "Events", href: "/dashboard/products", icon: CalendarDays },
-        { title: "Members", href: "/dashboard/members", icon: Users },
-        { title: "Settings", href: "/dashboard/settings", icon: Settings },
+        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: 'dashboard.view' },
+        { title: "Products", href: "/dashboard/products", icon: CalendarDays, permission: 'product.view' },
+        { title: "Members", href: "/dashboard/members", icon: Users, permission: 'dashboard.view' },
+        { title: "Reports", href: "/dashboard/reports", icon: Files, permission: 'report.view' },
+        { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
     ];
 
     const roles = [
@@ -109,18 +114,23 @@ export default function LayoutContext({
                         const isActive = pathname === menu.href;
 
                         return (
-                            <Link
-                                key={menu.href}
-                                href={menu.href}
-                                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition
-                                ${isActive
-                                        ? "bg-gray-900 text-white"
-                                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                                    }`}
-                            >
-                                <Icon size={18} />
-                                {menu.title}
-                            </Link>
+                            <div key={menu.href}>
+                                {
+                                    permissions.includes(menu.permission as string) && (
+                                        <Link
+                                            href={menu.href}
+                                            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition
+                                    ${isActive
+                                                    ? "bg-gray-900 text-white"
+                                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                                }`}
+                                        >
+                                            <Icon size={18} />
+                                            {menu.title}
+                                        </Link>
+                                    )
+                                }
+                            </div>
                         );
                     })}
                 </nav>

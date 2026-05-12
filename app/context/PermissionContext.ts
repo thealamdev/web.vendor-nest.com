@@ -1,3 +1,13 @@
 import { createContext } from "react";
 
-export const PermissionContext = createContext(null);
+export type PermissionResponse = {
+    permissions: string[];
+    isLoading: boolean;
+}
+
+const initialData: PermissionResponse = {
+    permissions: [],
+    isLoading: false
+}
+
+export const PermissionContext = createContext(initialData);

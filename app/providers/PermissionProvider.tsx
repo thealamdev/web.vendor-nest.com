@@ -12,6 +12,8 @@ export default function PermissionProvider({
 }: PageProps) {
 
   const [activeRole, setActiveRole] = useState('');
+  const [permissions, setPermissions] = useState([]);
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -22,18 +24,29 @@ export default function PermissionProvider({
   }, [])
 
   useEffect(() => {
-    const fetchPermission = async () => {
-      const response = await api.get(`/user-management/permissions/get/${activeRole}`)
-      console.log(response)
+    try {
+      setLoading(false);
+      const fetchPermission = async () => {
+        const response = await api.get(`/user-management/permissions/get/${activeRole}`);
+        setPermissions(response?.data?.payload?.permissions)
+      }
+      if (activeRole) {
+        fetchPermission()
+      }
+    } catch (error) {
+
+    } finally {
+      setLoading(false)
     }
-    if (activeRole) {
-      fetchPermission()
-    }
+
   }, [activeRole])
 
 
   return (
-    <PermissionContext.Provider value={null}>
+    <PermissionContext.Provider value={{
+      permissions: permissions,
+      isLoading: isLoading
+    }}>
       <div>{children}</div>
     </PermissionContext.Provider>
   )
