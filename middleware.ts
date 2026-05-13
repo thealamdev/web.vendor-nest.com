@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CookieEnum } from "./app/enums/CookieEnum";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+    if (request.method === "OPTIONS") return NextResponse.next();
+    
     const authCookie = request.cookies.get(CookieEnum.AUTH_COOKIE)?.value;
     const organizationContextCookie = request.cookies.get(CookieEnum.ORGANIZATION_CONTEXT)?.value;
+    console.log('context', organizationContextCookie);
 
     let parseAuthCookie: any = null;
     let parseOrganizationContextCookie: any = null;
@@ -23,7 +26,6 @@ export async function proxy(request: NextRequest) {
     const hasMemberships = parseAuthCookie?.hasMemberships;
     const hasOrganizationContext = parseOrganizationContextCookie;
 
-    console.log(hasOrganizationContext);
     const { pathname } = request.nextUrl;
 
     // const publisPaths = [

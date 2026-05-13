@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import LayoutContext from './layouts/LayoutContext'
-import PermissionProvider from '@/app/providers/RolePermissionProvider';
+import RolePermissionProvider from '@/app/providers/RolePermissionProvider';
+import OrganizationProvier from '@/app/providers/OrganizationProvier';
 
 export default function DashbaordLayout({
     children,
@@ -8,11 +9,13 @@ export default function DashbaordLayout({
     children: ReactNode;
 }) {
     return (
-        <PermissionProvider>
-            <LayoutContext>
-                {children}
-            </LayoutContext>
-        </PermissionProvider>
+        <RolePermissionProvider>
+            <OrganizationProvier>
+                <LayoutContext>
+                    {children}
+                </LayoutContext>
+            </OrganizationProvier>
+        </RolePermissionProvider>
 
     )
 }

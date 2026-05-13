@@ -20,10 +20,9 @@ import {
     Files,
 } from "lucide-react";
 
-import { deleteCookie } from "@/lib/session";
 import OrganizationSwitcher from "../components/OrganizationSwitcher";
 import { RolePermissionContext, RolePermissionResponse } from '@/app/context/RolePermissionContext';
-import { CookieEnum } from "@/app/enums/CookieEnum";
+import { logoutAction } from "@/app/actions/auth/vendor/logout-action";
 
 export default function LayoutContext({
     children,
@@ -83,9 +82,7 @@ export default function LayoutContext({
     }, []);
 
     const handleLogout = async () => {
-        await deleteCookie(CookieEnum.AUTH_COOKIE);
-        await deleteCookie(CookieEnum.ORGANIZATION_CONTEXT);
-        router.push("/");
+        await logoutAction()
     };
 
     const handleChangeRole = (role: any) => {

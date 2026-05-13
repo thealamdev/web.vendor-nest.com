@@ -7,7 +7,7 @@ interface PageProps {
   children: Readonly<ReactNode>
 }
 
-export default function PermissionProvider({
+export default function RolePermissionProvider({
   children
 }: PageProps) {
 

@@ -1,26 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
+import { OrganizationContext } from "@/app/context";
+import { getCookie } from "@/lib/session";
+import { CookieEnum } from "@/app/enums/CookieEnum";
 
 export default function OrganizationSwitcher() {
     const [open, setOpen] = useState(false);
+    const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+    const [switching, setSwitching] = useState(false);
+    const { organizations, changeOrganization } = useContext(OrganizationContext);
+    const currentOrg = organizations.find(o => o.org_id === selectedOrgId) ?? organizations[0];
 
-    const organizations = [
-        { id: 1, name: "VendorNext", subtitle: "Multi Organization Platform" },
-        { id: 2, name: "Tech Corp", subtitle: "Engineering Workspace" },
-        { id: 3, name: "Eventify Ltd", subtitle: "Event Management" },
-    ];
+    useEffect(() => {
+        const fetchOrgFromCookie = async () => {
+            const res = await getCookie(CookieEnum.ORGANIZATION_CONTEXT);
+            setSelectedOrgId(res)
+        }
+        fetchOrgFromCookie();
+    }, [])
 
-    const [currentOrg, setCurrentOrg] = useState(organizations[0]);
+    const handleSelect = useCallback(async (org: any) => {
+        if (org.org_id === currentOrg?.org_id || switching) return;
 
-    const handleSelect = (org: any) => {
-        setCurrentOrg(org);
+        setSwitching(true);
         setOpen(false);
 
-        // later you can call API or reload here
-        // router.refresh() or router.push(...)
-    };
+        try {
+            setSelectedOrgId(org.org_id);
+            await changeOrganization(org.org_id);
+        } finally {
+            setSwitching(false);
+        }
+    }, [currentOrg, switching, changeOrganization]);
 
     return (
         <div className="relative m-4">
@@ -33,18 +46,18 @@ export default function OrganizationSwitcher() {
 
                 {/* Avatar */}
                 <div className="h-10 w-10 rounded-xl bg-gray-900 text-white flex items-center justify-center font-bold">
-                    {currentOrg.name.slice(0, 2).toUpperCase()}
+                    {currentOrg?.name?.slice(0, 2).toUpperCase()}
                 </div>
 
                 {/* Name + Subtitle (ONLY THIS CHANGES) */}
                 <div className="text-left flex-1">
                     <h2 className="font-bold text-gray-900 leading-tight">
-                        {currentOrg.name}
+                        {currentOrg?.name}
                     </h2>
 
-                    <p className="text-xs text-gray-500">
+                    {/* <p className="text-xs text-gray-500">
                         {currentOrg.subtitle}
-                    </p>
+                    </p> */}
                 </div>
 
                 <ChevronDown
@@ -58,11 +71,11 @@ export default function OrganizationSwitcher() {
                 <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
 
                     {organizations.map((org) => {
-                        const active = org.id === currentOrg.id;
+                        const active = org.org_id === currentOrg.org_id;
 
                         return (
                             <button
-                                key={org.id}
+                                key={org.org_id}
                                 onClick={() => handleSelect(org)}
                                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition"
                             >
@@ -72,7 +85,7 @@ export default function OrganizationSwitcher() {
                                     </p>
 
                                     <p className="text-xs text-gray-500">
-                                        {org.subtitle}
+                                        {org.email}
                                     </p>
                                 </div>
 

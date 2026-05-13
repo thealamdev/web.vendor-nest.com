@@ -1,5 +1,7 @@
 import { RolePermissionContext } from "./RolePermissionContext"
+import { OrganizationContext } from './OrganizationContext';
 
-export { 
-    RolePermissionContext
- }
+export {
+    OrganizationContext,
+    RolePermissionContext,
+}
