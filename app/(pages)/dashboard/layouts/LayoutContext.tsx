@@ -23,6 +23,8 @@ import {
 import OrganizationSwitcher from "../components/OrganizationSwitcher";
 import { RolePermissionContext, RolePermissionResponse } from '@/app/context/RolePermissionContext';
 import { logoutAction } from "@/app/actions/auth/vendor/logout-action";
+import { getCookie } from "@/lib/session";
+import { CookieEnum } from "@/app/enums/CookieEnum";
 
 export default function LayoutContext({
     children,
@@ -40,19 +42,36 @@ export default function LayoutContext({
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
     const { roles, permissions, isLoading, changeRole } = useContext<RolePermissionResponse>(RolePermissionContext);
+    const [user, setUser] = useState<Record<string, string>>({
+        name: '',
+        email: ''
+    });
 
     const sidebarMenus = [
         { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: 'dashboard.view' },
         { title: "Products", href: "/dashboard/products", icon: CalendarDays, permission: 'product.view' },
         { title: "Members", href: "/dashboard/members", icon: Users, permission: 'dashboard.view' },
         { title: "Reports", href: "/dashboard/reports", icon: Files, permission: 'report.view' },
+        { title: "Role & Permission", href: "/dashboard/role-permisson", icon: Files, permission: 'role.view' },
         { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
     ];
 
     const [currentRole, setCurrentRole] = useState(roles[0]);
     useEffect(() => {
-        setCurrentRole(roles[0]);
+        let storedRole = localStorage.getItem('role');
+        const isExist = roles.some((role) => role.id === storedRole);
+        if(isExist){
+            setCurrentRole(roles.find((item) => item.id === storedRole));
+        }
     }, [roles])
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const res = await getCookie(CookieEnum.AUTH_COOKIE);
+            setUser(res.user)
+        }
+        fetchUser()
+    }, [])
 
     useEffect(() => {
 
@@ -181,10 +200,10 @@ export default function LayoutContext({
 
                                 <div className="hidden md:block text-left">
                                     <p className="text-sm font-semibold">
-                                        Shah Alam
+                                        {user?.name ? user?.name : 'User loading...'}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        {isLoading ? 'loading...': currentRole?.name}
+                                        {!currentRole?.name ? 'Role loading...' : currentRole?.name}
                                     </p>
                                 </div>
 
@@ -198,10 +217,10 @@ export default function LayoutContext({
                                     {/* User Info */}
                                     <div className="p-4 border-b">
                                         <h4 className="text-sm font-semibold">
-                                            Shah Alam
+                                            {user?.name}
                                         </h4>
                                         <p className="text-xs text-gray-500">
-                                            shahalam@gmail.com
+                                            {user?.email}
                                         </p>
                                     </div>
 

@@ -20,10 +20,26 @@ export default function RolePermissionProvider({
   useEffect(() => {
     const fetchRoles = async () => {
       const response = await api.get('/user-management/role/getAll');
-      setActiveRole(response?.data?.payload[0]?.id ?? '');
-      setRoles(response?.data?.payload);
+      const fetchedRoles = response?.data?.payload ?? [];
+      setRoles(fetchedRoles);
+      
+      const storedRole = localStorage.getItem('role');
+
+      const roleExists = fetchedRoles.some(
+        (role: any) => role.id === storedRole
+      );
+
+      if (storedRole && roleExists) {
+        setActiveRole(storedRole);
+      } else {
+        const firstRoleId = fetchedRoles[0]?.id ?? '';
+
+        setActiveRole(firstRoleId);
+
+        localStorage.setItem('role', firstRoleId);
+      }
     }
-    fetchRoles()
+    fetchRoles();
   }, [])
 
   useEffect(() => {
@@ -47,6 +63,7 @@ export default function RolePermissionProvider({
 
   const changeRole = (roleId: string) => {
     setActiveRole(roleId);
+    localStorage.setItem('role', roleId);
   };
 
   return (
