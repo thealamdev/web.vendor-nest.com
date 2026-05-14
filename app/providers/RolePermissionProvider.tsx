@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, { ReactNode, useEffect, useState } from 'react'
 import { RolePermissionContext } from '../context/RolePermissionContext'
 import { api } from '@/lib/api'
@@ -27,8 +28,8 @@ export default function RolePermissionProvider({
 
   useEffect(() => {
     if (!activeRole) return;
+    setLoading(true);
     try {
-      setLoading(false);
       const fetchPermission = async () => {
         const response = await api.get(`/user-management/permissions/get/${activeRole}`);
         setPermissions(response?.data?.payload?.permissions)

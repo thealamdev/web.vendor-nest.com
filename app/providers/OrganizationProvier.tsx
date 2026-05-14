@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect, useState } from 'react'
-import { chooseWorkspaceService } from '../services/choose-workspace/choose-workspace-service';
+import { chooseWorkspaceService } from '../services/choose-organization/choose-organization-service';
 import { OrganizationContext } from '../context';
 import { updateCookie } from '@/lib/session';
 import { CookieEnum } from '../enums/CookieEnum';
@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 
 export interface Membership {
     org_id: string;
+    isOwner: 'Owner' | 'Staff';
     name: string;
     email: string;
     phone: string;
@@ -44,7 +45,6 @@ export default function OrganizationProvier({
 
         fetchMembership();
     }, []);
-
 
     return (
         <OrganizationContext.Provider value={{

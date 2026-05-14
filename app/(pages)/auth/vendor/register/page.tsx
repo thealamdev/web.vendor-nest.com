@@ -26,9 +26,10 @@ export default function RegisterPage() {
 
     const handleSubmit = async () => {
         const res = await registerAction(data);
+        console.log(res)
 
-        if (res.success) {
-            router.push("/dashboard");
+        if (res.success && !res.payload.hasMembership) {
+            router.push("/auth/vendor/organization");
         }
 
         return res;
@@ -50,7 +51,7 @@ export default function RegisterPage() {
                         </h1>
 
                         <p className="text-sm text-gray-500">
-                            Register to access your workspace
+                            Register to access your organization
                         </p>
                     </div>
 

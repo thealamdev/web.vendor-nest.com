@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CookieEnum } from "./app/enums/CookieEnum";
 
-export async function middleware(request: NextRequest) {
-    if (request.method === "OPTIONS") return NextResponse.next();
-    
+const PUBLIC_PATHS = ['/', '/auth/vendor/login', '/auth/vendor/register'];
+const NO_ORG_CONTEXT_PATHS = ['/auth/vendor/organization', '/choose-organization'];
+const AUTH_PATHS = ['/dashboard'];
+
+function matchesPath(pathname: string, paths: string[]): boolean {
+    return paths.some((path) => pathname === path || pathname.startsWith(path + "/"));
+}
+
+const redirect = (pathname: string, request: NextRequest): NextResponse => {
+    return NextResponse.redirect(new URL(pathname, request.url))
+}
+
+const parseCookie = (request: NextRequest) => {
     const authCookie = request.cookies.get(CookieEnum.AUTH_COOKIE)?.value;
     const organizationContextCookie = request.cookies.get(CookieEnum.ORGANIZATION_CONTEXT)?.value;
-    console.log('context', organizationContextCookie);
 
     let parseAuthCookie: any = null;
     let parseOrganizationContextCookie: any = null;
@@ -22,44 +31,47 @@ export async function middleware(request: NextRequest) {
         console.error("Cookie parse error", e);
     }
 
-    const hasToken = parseAuthCookie?.token;
-    const hasMemberships = parseAuthCookie?.hasMemberships;
-    const hasOrganizationContext = parseOrganizationContextCookie;
+    const hasToken = Boolean(parseAuthCookie?.token);
+    const hasMembersips = Boolean(parseAuthCookie?.hasMemberships);
+    const hasOrganizationContext = Boolean(parseOrganizationContextCookie);
+
+    return {
+        hasToken,
+        hasMembersips,
+        hasOrganizationContext
+    }
+}
+
+export async function middleware(request: NextRequest) {
+    if (request.method === "OPTIONS") return NextResponse.next();
 
     const { pathname } = request.nextUrl;
+    const { hasToken, hasMembersips, hasOrganizationContext } = parseCookie(request);
 
-    // const publisPaths = [
-    //     '/',
-    // ];
+    if (hasToken) {
+        if (matchesPath(pathname, Array.prototype.concat(PUBLIC_PATHS, NO_ORG_CONTEXT_PATHS))) {
+            if (hasOrganizationContext) {
+                return redirect("/dashboard", request);
+            }
+        }
 
-    // const protectedPaths = [
-    //     '/choose-workspace',
-    //     '/dashboard'
-    // ];
+        if (matchesPath(pathname, Array.prototype.concat(PUBLIC_PATHS, AUTH_PATHS))) {
+            if (!hasOrganizationContext) {
+                return redirect('/choose-organization', request)
+            }
+        }
 
-    // protectedPaths.some((path: string) => {
-    //     console.log(path)
-    // })
+        if (hasMembersips) {
+            if (matchesPath(pathname, ['/auth/vendor/organization'])) {
+                return redirect('/choose-organization', request)
+            }
+        }
+    }
 
     if (!hasToken) {
-        if (pathname !== '/') {
-            return NextResponse.redirect(new URL('/', request.url))
+        if (matchesPath(pathname, Array.prototype.concat(NO_ORG_CONTEXT_PATHS, AUTH_PATHS))) {
+            return redirect('/', request);
         }
-        return NextResponse.next();
-    }
-
-    if (hasToken && !hasMemberships) {
-        if (pathname !== '/choose-workspace') {
-            return NextResponse.redirect(new URL('/choose-workspace', request.url))
-        }
-        return NextResponse.next();
-    }
-
-    if (hasToken && hasOrganizationContext) {
-        if (pathname === '/' || pathname === '/choose-workspace') {
-            return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-        return NextResponse.next();
     }
 
     return NextResponse.next();
@@ -68,7 +80,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/',
-        '/choose-workspace',
+        '/auth/vendor/login',
+        '/auth/vendor/register',
+        '/choose-organization',
+        '/auth/vendor/organization',
         '/dashboard/:path*'
     ]
 }

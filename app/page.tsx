@@ -26,7 +26,7 @@ export default function Home() {
     const res = await loginAction(data);
 
     if (res.success && res.payload.hasMembership) {
-      router.push("/choose-workspace");
+      router.push("/choose-organization");
     } else {
       router.push("/dashboard");
     }
@@ -122,12 +122,12 @@ export default function Home() {
           {/* Footer */}
           <p className="text-center text-sm text-gray-500">
             Don&apos;t have an account?{" "}
-            <button
-              type="button"
+            <a
+              href={'/auth/vendor/register'}
               className="font-medium text-gray-900 hover:underline"
             >
-              Contact admin
-            </button>
+              Register
+            </a>
           </p>
         </form>
       </div>

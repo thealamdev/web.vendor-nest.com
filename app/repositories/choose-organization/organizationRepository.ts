@@ -2,7 +2,7 @@ import { CookieEnum } from "@/app/enums/CookieEnum";
 import { api } from "@/lib/api"
 import { setCookie } from "@/lib/session";
 
-export const workspaceRepository = {
+export const organizationRepository = {
     choose: () => choose(),
     store: (orgId: string) => store(orgId)
 }

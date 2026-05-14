@@ -1,8 +1,9 @@
 "use client";
 
-import { storeWorkspaceAction } from "@/app/actions/choose-workspace/storeWorkspaceAction";
+import { storeOrganizationAction } from "@/app/actions/choose-organization/storeOrganizationAction";
 import { Membership } from "@/app/providers/OrganizationProvier";
-import { chooseWorkspaceService } from "@/app/services/choose-workspace/choose-workspace-service";
+import { chooseWorkspaceService } from "@/app/services/choose-organization/choose-organization-service";
+import { Button } from "@/components/ui/button";
 import { Building2, Mail, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,10 +27,10 @@ export default function Page() {
         fetchMembership();
     }, []);
 
-    const handleChooseWorkspace = async(membership: Membership) => {
+    const handleChooseOrganization = async (membership: Membership) => {
         setSelectedOrg(membership.org_id);
-        const res = await storeWorkspaceAction(membership.org_id);
-        if(res?.success){
+        const res = await storeOrganizationAction(membership.org_id);
+        if (res?.success) {
             router.push('/dashboard')
         }
     };
@@ -52,7 +53,8 @@ export default function Page() {
                         <div className="h-10 w-10 rounded-full border-4 border-gray-300 border-t-black animate-spin" />
                     </div>
                 ) : memberships.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-sm border p-10 text-center">
+                    <div className="flex flex-col gap-5 bg-white rounded-2xl shadow-sm border p-10 text-center">
+                        <Button type="button" onClick={() => router.push('/auth/vendor/organization')}>Create Workspace</Button>
                         <p className="text-gray-500">
                             No workspace found
                         </p>
@@ -67,7 +69,7 @@ export default function Page() {
                                 <button
                                     key={membership.org_id}
                                     onClick={() =>
-                                        handleChooseWorkspace(membership)
+                                        handleChooseOrganization(membership)
                                     }
                                     className={`text-left bg-white border rounded-3xl p-6 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${isSelected
                                         ? "border-black ring-2 ring-black"
@@ -80,7 +82,7 @@ export default function Page() {
                                         </div>
 
                                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 capitalize">
-                                            {membership.type}
+                                            {membership.isOwner}
                                         </span>
                                     </div>
 
