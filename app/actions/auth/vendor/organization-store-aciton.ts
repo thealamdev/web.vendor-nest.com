@@ -25,8 +25,5 @@ export type OrganizationServerResponse = {
 
 export const OrganizationStoreAction = async (request: OrganizationStoreRequest): Promise<ApiResponse<OrganizationServerResponse>> => {
     const res = await organizationService(request);
-    if(res.success){
-        storeOrganizationAction(res?.payload.id)
-    }
     return res;
 }
