@@ -1,3 +1,4 @@
+import { CheckOrgContextRequest, CheckOrgContextServerResponse } from "@/app/actions/choose-organization/storeOrganizationAction";
 import { organizationRepository } from "@/app/repositories/choose-organization/organizationRepository";
 
 export const chooseWorkspaceService = async () => {
@@ -5,7 +6,7 @@ export const chooseWorkspaceService = async () => {
     return res;
 }
 
-export const storeOrganizationService = async (orgId: string) => {
-    const res = await organizationRepository.store(orgId);
+export const storeOrganizationService = async (request: CheckOrgContextRequest):Promise<ApiResponse<CheckOrgContextServerResponse>> => {
+    const res = await organizationRepository.store(request);
     return res;
 }
