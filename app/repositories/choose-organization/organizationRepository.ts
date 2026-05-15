@@ -9,7 +9,7 @@ export const organizationRepository = {
 
 const choose = async () => {
     try {
-        const { data } = await api.get('/user-management/member/getAll');
+        const { data } = await api.get('/user-management/member/memberships');
         return data;
     } catch (error) {
         throw Error(`Got error ${error}`)

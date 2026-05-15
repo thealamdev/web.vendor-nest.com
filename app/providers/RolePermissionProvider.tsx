@@ -19,7 +19,7 @@ export default function RolePermissionProvider({
 
   useEffect(() => {
     const fetchRoles = async () => {
-      const response = await api.get('/user-management/role/getAll');
+      const response = await api.get('/user-management/member/roles');
       const fetchedRoles = response?.data?.payload ?? [];
       setRoles(fetchedRoles);
       

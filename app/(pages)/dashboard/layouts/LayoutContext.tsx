@@ -50,7 +50,7 @@ export default function LayoutContext({
     const sidebarMenus = [
         { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: 'dashboard.view' },
         { title: "Products", href: "/dashboard/products", icon: CalendarDays, permission: 'product.view' },
-        { title: "Members", href: "/dashboard/members", icon: Users, permission: 'dashboard.view' },
+        { title: "Members", href: "/dashboard/members", icon: Users, permission: 'member.view' },
         { title: "Reports", href: "/dashboard/reports", icon: Files, permission: 'report.view' },
         { title: "Role & Permission", href: "/dashboard/role-permisson", icon: Files, permission: 'role.view' },
         { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
