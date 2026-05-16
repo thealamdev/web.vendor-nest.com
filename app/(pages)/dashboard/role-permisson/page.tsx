@@ -4,7 +4,11 @@ import {
   RolePermissionContext,
   RolePermissionResponse
 } from '@/app/context/RolePermissionContext';
+import { Button } from '@/components/ui/button';
 import UnauthorizedComponent from '@/components/utilities/Unauthorized';
+import { api } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import React, { useContext } from 'react';
 
@@ -14,14 +18,27 @@ const Unauthorized = () => {
   )
 }
 
+const fetchRoles = async () => {
+  const res = await api.get('/user-management/role/getAll');
+  return res.data.payload;
+}
+
 export default function RolePermission() {
   const {
-    roles,
     permissions,
-    isLoading,
-    changeRole,
     roleId
   } = useContext<RolePermissionResponse>(RolePermissionContext);
+
+  const router = useRouter();
+
+  const {
+    data: roles = [],
+    isLoading,
+    error
+  } = useQuery<any>({
+    queryKey: ['roles:all'],
+    queryFn: fetchRoles
+  });
 
   if (isLoading) {
     return (
@@ -36,10 +53,13 @@ export default function RolePermission() {
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
 
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
           <h1 className="text-xl font-semibold text-gray-900">
             Roles
           </h1>
+          <Button
+            onClick={() => router.push('/dashboard/role-permisson/create')}
+            className='cursor-pointer'>+ Create Role</Button>
         </div>
 
         {permissions.includes('role.view') ? (
@@ -138,22 +158,7 @@ export default function RolePermission() {
                         )}
                       </td>
 
-                      <td className="px-6 py-4">
-
-                        <button
-                          onClick={() => changeRole(role.id)}
-                          className={`
-                 px-4 py-2 rounded-xl text-sm font-medium transition
-                 ${isActive
-                              ? 'bg-gray-900 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }
-               `}
-                        >
-                          {isActive ? 'Selected' : 'Select'}
-                        </button>
-
-                      </td>
+                      <td className='text-center'>...</td>
 
                     </tr>
                   );

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { RolePermissionRequest, rolePermissionStoreAction } from "@/app/actions/dashboard/role-permission/role-permission-store-aciton";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const permissionsData: Record<string, string[]> = {
     role: [
@@ -95,6 +97,8 @@ export default function CreateRolePage() {
         permissions: [] as string[]
     });
 
+    const router = useRouter();
+
     const totalPermissions = useMemo(() => {
         return Object.values(permissionsData).flat().length;
     }, []);
@@ -137,7 +141,12 @@ export default function CreateRolePage() {
 
     const handleSubmit = async () => {
         const res = await rolePermissionStoreAction(formData);
-        console.log(res);
+        if (res.success) {
+            toast.success('Role & Permission added');
+            setTimeout(() => {
+                router.push('/dashboard/role-permisson')
+            }, 1000)
+        }
         return res;
     };
 

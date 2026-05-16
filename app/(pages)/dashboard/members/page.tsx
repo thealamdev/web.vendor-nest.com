@@ -22,6 +22,7 @@ import {
   memberStoreAction,
   MemberStoreRequest,
 } from "@/app/actions/dashboard/members/member-store-action";
+import { toast } from "sonner";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -106,6 +107,7 @@ export default function Page() {
         queryKey: ["organization:members"],
       });
 
+      toast.success('Organization member added')
       setForm(initialForm);
 
       setIsOpen(false);
