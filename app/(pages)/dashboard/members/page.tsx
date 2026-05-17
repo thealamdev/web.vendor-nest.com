@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useActionState, useState } from "react";
 
 import Modal from "@/components/utilities/Modal";
 
@@ -16,12 +16,13 @@ import {
 
 import { api } from "@/lib/api";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   memberStoreAction,
   MemberStoreRequest,
 } from "@/app/actions/dashboard/members/member-store-action";
+
 import { toast } from "sonner";
 
 /* -------------------------------------------------------------------------- */
@@ -94,47 +95,35 @@ export default function Page() {
   });
 
   /* ------------------------------------------------------------------------ */
-  /*                                 Mutation                                 */
+  /*                                   Action                                 */
   /* ------------------------------------------------------------------------ */
 
-  const mutation = useMutation({
-    mutationFn: async (payload: MemberStoreRequest) => {
-      return await memberStoreAction(payload);
-    },
+  const handleSubmit = async () => {
+    const res = await memberStoreAction(form);
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["organization:members"],
-      });
-
-      toast.success('Organization member added')
+    if (res.success) {
+      queryClient.invalidateQueries({ queryKey: ["organization:members"] });
+      toast.success("Organization member added");
       setForm(initialForm);
-
       setIsOpen(false);
-    },
-  });
+    } else {
+      toast.error(res.message ?? "Something went wrong!");
+    }
+
+    return res;
+  };
+
+  const [res, action, isPending] = useActionState(handleSubmit, null);
+
+  // Field-level errors from the last response
+  const fieldErrors = res?.errors ?? {};
 
   /* ------------------------------------------------------------------------ */
   /*                              Handle Change                               */
   /* ------------------------------------------------------------------------ */
 
   const handleChange = (name: string, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  /* ------------------------------------------------------------------------ */
-  /*                              Handle Submit                               */
-  /* ------------------------------------------------------------------------ */
-
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-
-    mutation.mutate(form);
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   /* ------------------------------------------------------------------------ */
@@ -159,9 +148,7 @@ export default function Page() {
       {/* Loading */}
 
       {isLoading && (
-        <p className="text-sm text-gray-500">
-          Loading members...
-        </p>
+        <p className="text-sm text-gray-500">Loading members...</p>
       )}
 
       {/* Members Table */}
@@ -181,25 +168,12 @@ export default function Page() {
 
             <tbody>
               {members?.map((member, index) => (
-                <tr
-                  key={index}
-                  className="border-t border-gray-100"
-                >
+                <tr key={index} className="border-t border-gray-100">
                   <td className="p-4">{member.user_name}</td>
-
                   <td className="p-4">{member.user_email}</td>
-
-                  <td className="p-4 capitalize">
-                    {member.user_type}
-                  </td>
-
-                  <td className="p-4">
-                    {member.invited_by_name}
-                  </td>
-
-                  <td className="p-4">
-                    {member.invited_by_email}
-                  </td>
+                  <td className="p-4 capitalize">{member.user_type}</td>
+                  <td className="p-4">{member.invited_by_name}</td>
+                  <td className="p-4">{member.invited_by_email}</td>
                 </tr>
               ))}
             </tbody>
@@ -214,102 +188,107 @@ export default function Page() {
         onClose={() => setIsOpen(false)}
         title="Create Member"
       >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form action={action} className="space-y-4">
+
           {/* Name */}
 
-          <Input
-            value={form.name}
-            onChange={(e) =>
-              handleChange("name", e.target.value)
-            }
-            placeholder="Full Name"
-            className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-          />
+          <div className="space-y-1">
+            <Input
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="Full Name"
+              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
+            />
+            {fieldErrors?.name && (
+              <p className="text-sm text-red-500">{fieldErrors.name}</p>
+            )}
+          </div>
 
           {/* Email */}
 
-          <Input
-            type="email"
-            value={form.email}
-            onChange={(e) =>
-              handleChange("email", e.target.value)
-            }
-            placeholder="Email Address"
-            className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-          />
+          <div className="space-y-1">
+            <Input
+              type="email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              placeholder="Email Address"
+              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
+            />
+            {fieldErrors?.email && (
+              <p className="text-sm text-red-500">{fieldErrors.email}</p>
+            )}
+          </div>
 
           {/* Phone */}
 
-          <Input
-            value={form.phone}
-            onChange={(e) =>
-              handleChange("phone", e.target.value)
-            }
-            placeholder="Phone Number"
-            className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-          />
+          <div className="space-y-1">
+            <Input
+              value={form.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              placeholder="Phone Number"
+              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
+            />
+            {fieldErrors?.phone && (
+              <p className="text-sm text-red-500">{fieldErrors.phone}</p>
+            )}
+          </div>
 
           {/* Password */}
 
-          <Input
-            type="password"
-            value={form.password}
-            onChange={(e) =>
-              handleChange("password", e.target.value)
-            }
-            placeholder="Password"
-            className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-          />
+          <div className="space-y-1">
+            <Input
+              type="password"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              placeholder="Password"
+              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
+            />
+            {fieldErrors?.password && (
+              <p className="text-sm text-red-500">{fieldErrors.password}</p>
+            )}
+          </div>
 
           {/* Confirm Password */}
 
-          <Input
-            type="password"
-            value={form.password_confirmation}
-            onChange={(e) =>
-              handleChange(
-                "password_confirmation",
-                e.target.value
-              )
-            }
-            placeholder="Confirm Password"
-            className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-          />
+          <div className="space-y-1">
+            <Input
+              type="password"
+              value={form.password_confirmation}
+              onChange={(e) =>
+                handleChange("password_confirmation", e.target.value)
+              }
+              placeholder="Confirm Password"
+              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
+            />
+            {fieldErrors?.password_confirmation && (
+              <p className="text-sm text-red-500">
+                {fieldErrors.password_confirmation}
+              </p>
+            )}
+          </div>
 
           {/* Role Select */}
 
-          <Select
-            value={form.role_id}
-            onValueChange={(value) =>
-              handleChange("role_id", value)
-            }
-          >
-            <SelectTrigger className="w-full !h-11 border-gray-300 focus:ring-1 focus:ring-gray-900">
-              <SelectValue placeholder="Select Role" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {roles?.map((role) => (
-                <SelectItem
-                  key={role.id}
-                  value={role.id}
-                >
-                  {role.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Error Message */}
-
-          {mutation.isError && (
-            <p className="text-sm text-red-500">
-              Something went wrong. Please try again.
-            </p>
-          )}
+          <div className="space-y-1">
+            <Select
+              value={form.role_id}
+              onValueChange={(value) => handleChange("role_id", value)}
+            >
+              <SelectTrigger className="w-full !h-11 border-gray-300 focus:ring-1 focus:ring-gray-900">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles?.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldErrors?.role_id && (
+              <p className="text-sm text-red-500">{fieldErrors.role_id}</p>
+            )}
+          </div>
 
           {/* Footer */}
 
@@ -324,12 +303,10 @@ export default function Page() {
 
             <button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={isPending}
               className="px-4 py-2 bg-black text-white rounded-xl text-sm disabled:opacity-50"
             >
-              {mutation.isPending
-                ? "Creating..."
-                : "Create Member"}
+              {isPending ? "Creating..." : "Create Member"}
             </button>
           </div>
         </form>

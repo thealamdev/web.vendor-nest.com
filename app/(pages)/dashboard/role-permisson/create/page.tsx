@@ -146,6 +146,8 @@ export default function CreateRolePage() {
             setTimeout(() => {
                 router.push('/dashboard/role-permisson')
             }, 1000)
+        } else {
+            toast.error(res?.message)
         }
         return res;
     };
@@ -155,10 +157,6 @@ export default function CreateRolePage() {
     return (
         <div className="min-h-screen bg-muted/30 p-6">
             <form action={action} className="mx-auto max-w-7xl space-y-6">
-                <pre className="text-green-400">
-                    {JSON.stringify(errors, null, 2)}
-                </pre>
-
                 {/* Header */}
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
@@ -218,6 +216,8 @@ export default function CreateRolePage() {
                                             }))
                                         }
                                     />
+
+                                    {errors?.errors?.name && <p className="text-red-500 text-sm">{errors?.errors?.name}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -236,6 +236,7 @@ export default function CreateRolePage() {
                                             }))
                                         }
                                     />
+                                    {errors?.errors?.description && <p className="text-red-500 text-sm">{errors?.errors?.description}</p>}
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-xl border p-4">
@@ -259,21 +260,6 @@ export default function CreateRolePage() {
                                         }
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* JSON Preview */}
-                        <Card className="rounded-2xl border-0 shadow-sm">
-                            <CardHeader>
-                                <CardTitle>
-                                    Payload Preview
-                                </CardTitle>
-                            </CardHeader>
-
-                            <CardContent>
-                                <pre className="overflow-auto rounded-xl bg-black p-4 text-xs text-green-400">
-                                    {JSON.stringify(formData, null, 4)}
-                                </pre>
                             </CardContent>
                         </Card>
                     </div>
