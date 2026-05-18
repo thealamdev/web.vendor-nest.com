@@ -1,33 +1,15 @@
 "use client";
 
 import React, { useActionState, useState } from "react";
-
 import Modal from "@/components/utilities/Modal";
-
-import { Input } from "@/components/ui/input";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import { api } from "@/lib/api";
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
   memberStoreAction,
   MemberStoreRequest,
 } from "@/app/actions/dashboard/members/member-store-action";
-
 import { toast } from "sonner";
-
-/* -------------------------------------------------------------------------- */
-/*                                   Types                                    */
-/* -------------------------------------------------------------------------- */
+import MemberStoreComponent from "./components/MemberStoreComponent";
 
 type Member = {
   user_name: string;
@@ -37,66 +19,44 @@ type Member = {
   invited_by_email: string;
 };
 
-type Role = {
+export type Role = {
   id: string;
   name: string;
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                    APIs                                    */
-/* -------------------------------------------------------------------------- */
-
 const fetchMembers = async (): Promise<Member[]> => {
   const res = await api.get("/user-management/member/members");
-  return res.data.payload;
+  return res.data?.payload;
 };
 
 const fetchRoles = async (): Promise<Role[]> => {
   const res = await api.get("/user-management/role/getAll");
-  return res.data.payload;
+  return res.data?.payload;
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                    Page                                    */
-/* -------------------------------------------------------------------------- */
 
 export default function Page() {
   const queryClient = useQueryClient();
-
   const [isOpen, setIsOpen] = useState(false);
-
-  /* ------------------------------------------------------------------------ */
-  /*                                 Form State                               */
-  /* ------------------------------------------------------------------------ */
-
   const initialForm: MemberStoreRequest = {
     name: "",
     email: "",
     phone: "",
     password: "",
     password_confirmation: "",
-    role_id: "",
+    role_ids: [],
   };
 
   const [form, setForm] = useState<MemberStoreRequest>(initialForm);
-
-  /* ------------------------------------------------------------------------ */
-  /*                                  Queries                                 */
-  /* ------------------------------------------------------------------------ */
 
   const { data: members, isLoading } = useQuery({
     queryKey: ["organization:members"],
     queryFn: fetchMembers,
   });
 
-  const { data: roles } = useQuery({
+  const { data: roles = [] } = useQuery({
     queryKey: ["organization:roles"],
     queryFn: fetchRoles,
   });
-
-  /* ------------------------------------------------------------------------ */
-  /*                                   Action                                 */
-  /* ------------------------------------------------------------------------ */
 
   const handleSubmit = async () => {
     const res = await memberStoreAction(form);
@@ -115,25 +75,25 @@ export default function Page() {
 
   const [res, action, isPending] = useActionState(handleSubmit, null);
 
-  // Field-level errors from the last response
   const fieldErrors = res?.errors ?? {};
 
-  /* ------------------------------------------------------------------------ */
-  /*                              Handle Change                               */
-  /* ------------------------------------------------------------------------ */
-
   const handleChange = (name: string, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === 'role_ids') {
+      setForm((prev) => {
+        const exist = prev.role_ids.includes(value);
+        if (exist) return prev;
+        return {
+          ...prev,
+          role_ids: exist ? prev.role_ids.filter(item => item !== value) : [...prev.role_ids, value]
+        }
+      })
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
-
-  /* ------------------------------------------------------------------------ */
-  /*                                   Render                                 */
-  /* ------------------------------------------------------------------------ */
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Members</h1>
 
@@ -145,13 +105,9 @@ export default function Page() {
         </button>
       </div>
 
-      {/* Loading */}
-
       {isLoading && (
         <p className="text-sm text-gray-500">Loading members...</p>
       )}
-
-      {/* Members Table */}
 
       {!isLoading && (
         <div className="overflow-x-auto border border-gray-200 rounded-2xl">
@@ -181,135 +137,20 @@ export default function Page() {
         </div>
       )}
 
-      {/* Modal */}
-
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Create Member"
       >
-        <form action={action} className="space-y-4">
-
-          {/* Name */}
-
-          <div className="space-y-1">
-            <Input
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Full Name"
-              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-            />
-            {fieldErrors?.name && (
-              <p className="text-sm text-red-500">{fieldErrors.name}</p>
-            )}
-          </div>
-
-          {/* Email */}
-
-          <div className="space-y-1">
-            <Input
-              type="email"
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              placeholder="Email Address"
-              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-            />
-            {fieldErrors?.email && (
-              <p className="text-sm text-red-500">{fieldErrors.email}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-
-          <div className="space-y-1">
-            <Input
-              value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-              placeholder="Phone Number"
-              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-            />
-            {fieldErrors?.phone && (
-              <p className="text-sm text-red-500">{fieldErrors.phone}</p>
-            )}
-          </div>
-
-          {/* Password */}
-
-          <div className="space-y-1">
-            <Input
-              type="password"
-              value={form.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              placeholder="Password"
-              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-            />
-            {fieldErrors?.password && (
-              <p className="text-sm text-red-500">{fieldErrors.password}</p>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-
-          <div className="space-y-1">
-            <Input
-              type="password"
-              value={form.password_confirmation}
-              onChange={(e) =>
-                handleChange("password_confirmation", e.target.value)
-              }
-              placeholder="Confirm Password"
-              className="h-11 border-gray-300 focus-visible:ring-1 focus-visible:ring-gray-900"
-            />
-            {fieldErrors?.password_confirmation && (
-              <p className="text-sm text-red-500">
-                {fieldErrors.password_confirmation}
-              </p>
-            )}
-          </div>
-
-          {/* Role Select */}
-
-          <div className="space-y-1">
-            <Select
-              value={form.role_id}
-              onValueChange={(value) => handleChange("role_id", value)}
-            >
-              <SelectTrigger className="w-full !h-11 border-gray-300 focus:ring-1 focus:ring-gray-900">
-                <SelectValue placeholder="Select Role" />
-              </SelectTrigger>
-              <SelectContent>
-                {roles?.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {fieldErrors?.role_id && (
-              <p className="text-sm text-red-500">{fieldErrors.role_id}</p>
-            )}
-          </div>
-
-          {/* Footer */}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-xl text-sm"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="px-4 py-2 bg-black text-white rounded-xl text-sm disabled:opacity-50"
-            >
-              {isPending ? "Creating..." : "Create Member"}
-            </button>
-          </div>
-        </form>
+        <MemberStoreComponent
+          action={action}
+          form={form}
+          fieldErrors={fieldErrors}
+          handleChange={handleChange}
+          roles={roles}
+          setIsOpen={setIsOpen}
+          isPending={isPending}
+        />
       </Modal>
     </div>
   );

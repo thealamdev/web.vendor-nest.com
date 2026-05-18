@@ -53,6 +53,7 @@ export default function LayoutContext({
         { title: "Orders", href: "/dashboard/orders", icon: ListOrdered, permission: 'order.view' },
         { title: "Members", href: "/dashboard/members", icon: Users, permission: 'member.view' },
         { title: "Reports", href: "/dashboard/reports", icon: Files, permission: 'report.view' },
+        { title: "Notification", href: "/dashboard/notification", icon: Files, permission: 'notification.view' },
         { title: "Role & Permission", href: "/dashboard/role-permisson", icon: Files, permission: 'role.view' },
         { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
     ];

@@ -8,7 +8,7 @@ export type MemberStoreRequest = {
     password: string;
     phone?: string;
     password_confirmation: string;
-    role_id: string;
+    role_ids: string[];
 }
 
 export const memberStoreAction = async (request: MemberStoreRequest) => {

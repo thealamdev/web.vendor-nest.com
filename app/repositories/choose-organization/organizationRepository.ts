@@ -14,7 +14,7 @@ const choose = async () => {
         const { data } = await api.get('/user-management/member/memberships');
         return data;
     } catch (error) {
-        throw Error(`Got error ${error}`)
+        return ApiErrorRes(error);
     }
 }
 
