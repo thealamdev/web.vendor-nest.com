@@ -4,8 +4,9 @@ import {
   RolePermissionContext,
   RolePermissionResponse
 } from '@/app/context/RolePermissionContext';
+import { usePermission } from '@/app/hooks';
 import { Button } from '@/components/ui/button';
-import UnauthorizedComponent from '@/components/utilities/Unauthorized';
+import UnauthorizedComponent from '@/components/utilities/UnauthorizedComponent';
 import { api } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -24,10 +25,12 @@ const fetchRoles = async () => {
 }
 
 export default function RolePermission() {
-  const {
-    permissions,
-    roleId
-  } = useContext<RolePermissionResponse>(RolePermissionContext);
+  // const {
+  //   permissions,
+  //   roleId
+  // } = useContext<RolePermissionResponse>(RolePermissionContext);
+
+  const { permissions, hasPermission, isHookLoasing } = usePermission();
 
   const router = useRouter();
 
@@ -40,7 +43,7 @@ export default function RolePermission() {
     queryFn: fetchRoles
   });
 
-  if (isLoading) {
+  if (isHookLoasing) {
     return (
       <div className="p-6 text-sm text-gray-500">
         Loading...
@@ -62,7 +65,7 @@ export default function RolePermission() {
             className='cursor-pointer'>+ Create Role</Button>
         </div>
 
-        {permissions.includes('role.view') ? (
+        {hasPermission('role.view') ? (
           <div className="overflow-x-auto">
             <table className="w-full">
 
@@ -99,8 +102,6 @@ export default function RolePermission() {
               <tbody>
 
                 {roles?.map((role: any) => {
-
-                  const isActive = roleId === role.id;
 
                   return (
                     <tr
@@ -158,7 +159,12 @@ export default function RolePermission() {
                         )}
                       </td>
 
-                      <td className='text-center'>...</td>
+                      <td className='text-center'>
+                        <Button
+                          type='button'
+                          onClick={() => router.push(`/dashboard/role-permisson/update/${role?.id}`)}
+                        >Edit</Button>
+                      </td>
 
                     </tr>
                   );

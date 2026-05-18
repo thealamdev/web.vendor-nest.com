@@ -15,9 +15,9 @@ import {
     ChevronDown,
     User,
     CreditCard,
-    Check,
     ChevronRight,
     Files,
+    ListOrdered,
 } from "lucide-react";
 
 import OrganizationSwitcher from "../components/OrganizationSwitcher";
@@ -41,7 +41,7 @@ export default function LayoutContext({
 
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
-    const { roles, permissions, isLoading, changeRole } = useContext<RolePermissionResponse>(RolePermissionContext);
+    const { permissions, isLoading } = useContext<RolePermissionResponse>(RolePermissionContext);
     const [user, setUser] = useState<Record<string, string>>({
         name: '',
         email: ''
@@ -50,20 +50,12 @@ export default function LayoutContext({
     const sidebarMenus = [
         { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: 'dashboard.view' },
         { title: "Products", href: "/dashboard/products", icon: CalendarDays, permission: 'product.view' },
+        { title: "Orders", href: "/dashboard/orders", icon: ListOrdered, permission: 'order.view' },
         { title: "Members", href: "/dashboard/members", icon: Users, permission: 'member.view' },
         { title: "Reports", href: "/dashboard/reports", icon: Files, permission: 'report.view' },
         { title: "Role & Permission", href: "/dashboard/role-permisson", icon: Files, permission: 'role.view' },
         { title: "Settings", href: "/dashboard/settings", icon: Settings, permission: 'dashboard.view' },
     ];
-
-    const [currentRole, setCurrentRole] = useState(roles[0]);
-    useEffect(() => {
-        let storedRole = localStorage.getItem('role');
-        const isExist = roles.some((role) => role.id === storedRole);
-        if(isExist){
-            setCurrentRole(roles.find((item) => item.id === storedRole));
-        }
-    }, [roles])
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -104,12 +96,6 @@ export default function LayoutContext({
         await logoutAction()
     };
 
-    const handleChangeRole = (role: any) => {
-        changeRole(role.id)
-        setCurrentRole(role);
-        setShowRoleMenu(false);
-    };
-
     return (
         <div className="min-h-screen bg-gray-50 flex">
 
@@ -127,7 +113,7 @@ export default function LayoutContext({
                         return (
                             <div key={menu.href}>
                                 {
-                                    permissions.includes(menu.permission as string) && (
+                                    permissions?.includes(menu.permission as string) && (
                                         <Link
                                             href={menu.href}
                                             className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition
@@ -203,7 +189,7 @@ export default function LayoutContext({
                                         {user?.name ? user?.name : 'User loading...'}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        {!currentRole?.name ? 'Role loading...' : currentRole?.name}
+                                        {!user?.email ? 'Email loading...' : user?.email}
                                     </p>
                                 </div>
 
@@ -237,49 +223,6 @@ export default function LayoutContext({
                                             <CreditCard size={18} />
                                             Billing
                                         </button>
-
-                                        {/* ROLE TOGGLE */}
-                                        <button
-                                            onClick={() => setShowRoleMenu(!showRoleMenu)}
-                                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-100"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <User size={18} />
-                                                <span>Role</span>
-                                            </div>
-
-                                            <ChevronRight
-                                                size={16}
-                                                className={`transition ${showRoleMenu ? "rotate-90" : ""}`}
-                                            />
-                                        </button>
-
-                                        {/* Nested Role List */}
-                                        {showRoleMenu && (
-                                            <div className="ml-6 space-y-1">
-
-                                                {roles.map((role) => {
-
-                                                    const active = role.id === currentRole?.id;
-
-                                                    return (
-                                                        <button
-                                                            key={role.id}
-                                                            onClick={() => handleChangeRole(role)}
-                                                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50"
-                                                        >
-                                                            <span className="text-sm">
-                                                                {role.name}
-                                                            </span>
-
-                                                            {active && (
-                                                                <Check size={14} className="text-green-600" />
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
 
                                         {/* Logout */}
                                         <button
