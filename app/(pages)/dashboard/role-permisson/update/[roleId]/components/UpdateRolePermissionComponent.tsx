@@ -1,11 +1,10 @@
 "use client";
 
 import { RolePermissionContext, RolePermissionResponse } from "@/app/context/RolePermissionContext";
-import { usePermission } from "@/app/hooks";
 import { rolePermissionService } from "@/app/services/dashboard/role-permission/role-permission-service";
+import { hasPermission } from "@/app/utils/PermissionHandler";
 import UnauthorizedComponent from "@/components/utilities/UnauthorizedComponent";
 import { useQuery } from "@tanstack/react-query";
-import { SplinePointerIcon } from "lucide-react";
 import { useContext } from "react";
 
 type PageProps = {
@@ -20,26 +19,20 @@ const fetchRoles = async (roleId: string) => {
 export default function UpdateRolePermissionComponent({
     roleId
 }: PageProps) {
-    const { roles, permissions, hasPermission } = usePermission();
-
+    const { permissions, isLoading } = useContext<RolePermissionResponse>(RolePermissionContext);
     const { data, error, isPending } = useQuery({
         queryKey: ["role_permissions:all"],
         queryFn: () => fetchRoles(roleId)
     });
 
-    const canViewRoles = hasPermission('role.view');
-
-    if (isPending) return <SplinePointerIcon />;
-    if (canViewRoles === false) return <UnauthorizedComponent />;
-
-    if (isPending) {
+    if (isPending || isLoading) {
         return <p>Loading...</p>
     }
 
     return (
         <div>
             {
-                hasPermission('role.view') ? (
+                hasPermission('role.view', permissions) ? (
                     <div>
                         <pre>{JSON.stringify(data, null, 2)}</pre>
                     </div>

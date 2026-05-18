@@ -4,7 +4,7 @@ import {
   RolePermissionContext,
   RolePermissionResponse
 } from '@/app/context/RolePermissionContext';
-import { usePermission } from '@/app/hooks';
+import { hasPermission } from '@/app/utils/PermissionHandler';
 import { Button } from '@/components/ui/button';
 import UnauthorizedComponent from '@/components/utilities/UnauthorizedComponent';
 import { api } from '@/lib/api';
@@ -25,25 +25,23 @@ const fetchRoles = async () => {
 }
 
 export default function RolePermission() {
-  // const {
-  //   permissions,
-  //   roleId
-  // } = useContext<RolePermissionResponse>(RolePermissionContext);
-
-  const { permissions, hasPermission, isHookLoasing } = usePermission();
+  const {
+    permissions,
+    isLoading
+  } = useContext<RolePermissionResponse>(RolePermissionContext);
 
   const router = useRouter();
 
   const {
     data: roles = [],
-    isLoading,
+    isLoading: roleLoading,
     error
   } = useQuery<any>({
     queryKey: ['roles:all'],
     queryFn: fetchRoles
   });
 
-  if (isHookLoasing) {
+  if (roleLoading || isLoading) {
     return (
       <div className="p-6 text-sm text-gray-500">
         Loading...
@@ -65,7 +63,7 @@ export default function RolePermission() {
             className='cursor-pointer'>+ Create Role</Button>
         </div>
 
-        {hasPermission('role.view') ? (
+        {hasPermission('role.view', permissions) ? (
           <div className="overflow-x-auto">
             <table className="w-full">
 

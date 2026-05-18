@@ -1,4 +1,1 @@
-import usePermission from './usePermisson';
-export {
-    usePermission
-}
+console.log('Hi');
