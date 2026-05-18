@@ -21,7 +21,7 @@ export default function UpdateRolePermissionComponent({
 }: PageProps) {
     const { permissions, isLoading } = useContext<RolePermissionResponse>(RolePermissionContext);
     const { data, error, isPending } = useQuery({
-        queryKey: ["role_permissions:all"],
+        queryKey: [`role_permissions:${roleId}`],
         queryFn: () => fetchRoles(roleId)
     });
 
