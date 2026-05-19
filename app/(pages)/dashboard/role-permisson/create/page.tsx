@@ -1,92 +1,24 @@
 "use client";
 
-import React, { useActionState, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Check, Shield } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useActionState, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PermissionGroupByModuleResponse, rolePermissionService } from "@/app/services/dashboard/role-permission/role-permission-service";
 import { RolePermissionRequest, rolePermissionStoreAction } from "@/app/actions/dashboard/role-permission/role-permission-store-aciton";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-const permissionsData: Record<string, string[]> = {
-    role: [
-        "role.view",
-        "role.create",
-        "role.update",
-        "role.delete",
-        "role.assign"
-    ],
-
-    permission: ["permission.view"],
-
-    organization: [
-        "organization.view",
-        "organization.create",
-        "organization.update",
-        "organization.delete",
-        "organization.switch"
-    ],
-
-    member: [
-        "member.view",
-        "member.invite",
-        "member.update",
-        "member.remove"
-    ],
-
-    product: [
-        "product.view",
-        "product.create",
-        "product.update",
-        "product.delete",
-        "product.approve",
-        "product.reject"
-    ],
-
-    category: [
-        "category.view",
-        "category.create",
-        "category.update",
-        "category.delete"
-    ],
-
-    order: [
-        "order.view",
-        "order.manage",
-        "order.update_status",
-        "order.cancel"
-    ],
-
-    payment: [
-        "payment.view",
-        "payment.manage",
-        "payment.refund"
-    ],
-
-    transaction: ["transaction.view"],
-
-    report: [
-        "report.view",
-        "report.export"
-    ],
-
-    notification: [
-        "notification.view",
-        "notification.send"
-    ],
-
-    support: [
-        "support.view",
-        "support.reply",
-        "support.close"
-    ]
-};
+const fetchPermissions = async () => {
+    const res = await rolePermissionService.permissionsGroupByModule();
+    return res.payload;
+}
 
 export default function CreateRolePage() {
     const [formData, setFormData] = useState<RolePermissionRequest>({
@@ -97,10 +29,17 @@ export default function CreateRolePage() {
         permissions: [] as string[]
     });
 
+    const queryClient = useQueryClient();
+
+    const { data: permissionsData = [], error, isLoading } = useQuery<PermissionGroupByModuleResponse>({
+        queryKey: [`permissionGroupByModule}`],
+        queryFn: fetchPermissions
+    })
+
     const router = useRouter();
 
     const totalPermissions = useMemo(() => {
-        return Object.values(permissionsData).flat().length;
+        return Object?.values(permissionsData).flat().length;
     }, []);
 
     const selectedCount = formData.permissions.length;
@@ -143,6 +82,9 @@ export default function CreateRolePage() {
         const res = await rolePermissionStoreAction(formData);
         if (res.success) {
             toast.success('Role & Permission added');
+            queryClient.invalidateQueries({
+                queryKey: ['roles:all']
+            })
             setTimeout(() => {
                 router.push('/dashboard/role-permisson')
             }, 1000)

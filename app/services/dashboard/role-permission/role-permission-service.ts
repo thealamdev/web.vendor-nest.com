@@ -7,8 +7,15 @@ export type RolePermissionGetResponse = {
     permissions: string[]
 }
 
+export type PermissionGroupByModuleResponse = Record<string, string[]>
+
 const get = async (ROLE_ID: string): Promise<ApiResponse<RolePermissionGetResponse>> => {
     const res = await rolePermissionRepository.get(ROLE_ID);
+    return res;
+}
+
+const permissionsGroupByModule = async (): Promise<ApiResponse<PermissionGroupByModuleResponse>> => {
+    const res = await rolePermissionRepository.permissionsGroupByModule();
     return res;
 }
 
@@ -19,5 +26,6 @@ const store = async (request: RolePermissionRequest): Promise<ApiResponse<RolePe
 
 export const rolePermissionService = {
     get: (ROLE_ID: string) => get(ROLE_ID),
+    permissionsGroupByModule: () => permissionsGroupByModule(),
     store: (request: RolePermissionRequest) => store(request)
 }

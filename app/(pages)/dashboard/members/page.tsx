@@ -10,8 +10,11 @@ import {
 } from "@/app/actions/dashboard/members/member-store-action";
 import { toast } from "sonner";
 import MemberStoreComponent from "./components/MemberStoreComponent";
+import { Button } from "@/components/ui/button";
+import MemberUpdateComponent from "./components/MemberUpdateComponent";
 
 type Member = {
+  id: string;
   user_name: string;
   user_email: string;
   user_type: string;
@@ -37,6 +40,7 @@ const fetchRoles = async (): Promise<Role[]> => {
 export default function Page() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const initialForm: MemberStoreRequest = {
     name: "",
     email: "",
@@ -47,8 +51,9 @@ export default function Page() {
   };
 
   const [form, setForm] = useState<MemberStoreRequest>(initialForm);
+  const [member, setMember] = useState<Member>();
 
-  const { data: members, isLoading } = useQuery({
+  const { data: members = [], isLoading } = useQuery<Member[]>({
     queryKey: ["organization:members"],
     queryFn: fetchMembers,
   });
@@ -57,6 +62,11 @@ export default function Page() {
     queryKey: ["organization:roles"],
     queryFn: fetchRoles,
   });
+
+  const handleUpdate = (memberId: string) => {
+    setIsOpenUpdate(true);
+    setMember(members?.find((member: Member) => member.id === memberId))
+  }
 
   const handleSubmit = async () => {
     const res = await memberStoreAction(form);
@@ -119,6 +129,7 @@ export default function Page() {
                 <th className="p-4 font-medium">Type</th>
                 <th className="p-4 font-medium">Invited By</th>
                 <th className="p-4 font-medium">Invited Email</th>
+                <th className="p-4 font-medium">Actions</th>
               </tr>
             </thead>
 
@@ -130,6 +141,12 @@ export default function Page() {
                   <td className="p-4 capitalize">{member.user_type}</td>
                   <td className="p-4">{member.invited_by_name}</td>
                   <td className="p-4">{member.invited_by_email}</td>
+                  <td>
+                    <Button
+                      type="button"
+                      onClick={() => handleUpdate(member?.id)}
+                    >Edit</Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -151,6 +168,15 @@ export default function Page() {
           setIsOpen={setIsOpen}
           isPending={isPending}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isOpenUpdate}
+        onClose={() => setIsOpenUpdate(false)}
+        title="Create Member"
+      >
+        <pre>{JSON.stringify(member, null, 2)}</pre>
+        <MemberUpdateComponent />
       </Modal>
     </div>
   );
