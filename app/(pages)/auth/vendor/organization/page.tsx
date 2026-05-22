@@ -37,12 +37,12 @@ export default function CreateOrganizationPage() {
             setError(null);
 
             const res = await OrganizationStoreAction(data);
-            console.log(res)
-            return;
+
             if (res.success) {
                 router.push("/dashboard");
             }
         } catch (err: any) {
+            console.log("Organization creation error:", err);
             setError(
                 err?.response?.data?.message || "Failed to create organization"
             );

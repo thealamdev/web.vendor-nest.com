@@ -8,7 +8,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Role } from "../page";
 import { PackageCheck, ShieldCheck, ShoppingCart, X } from "lucide-react";
 
 type PageProps = {
@@ -19,6 +18,7 @@ type PageProps = {
     roles: any;
     setIsOpen: (value: boolean) => void;
     isPending: boolean;
+    handleRemove: (type: string, memberId: string) => void;
 }
 
 const getRoleIcon = (slug: string) => {
@@ -41,7 +41,8 @@ export default function MemberStoreComponent({
     handleChange,
     roles,
     setIsOpen,
-    isPending
+    isPending,
+    handleRemove
 }: PageProps) {
 
     const matchedRoles = roles.filter((role: any, index: number) => (
@@ -173,14 +174,7 @@ export default function MemberStoreComponent({
 
                         <button
                             type="button"
-                            // onClick={() => {
-                            //     setForm((prev: any) => ({
-                            //         ...prev,
-                            //         role_ids: prev.role_ids.filter(
-                            //             (id) => id !== role.id
-                            //         ),
-                            //     }));
-                            // }}
+                            onClick={() => handleRemove("store", role.id)}
                             className="rounded-md p-1 hover:bg-red-50"
                         >
                             <X className="h-4 w-4 text-red-500" />
