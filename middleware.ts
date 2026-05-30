@@ -35,8 +35,6 @@ const parseCookie = (request: NextRequest) => {
     const hasMembersips = Boolean(parseAuthCookie?.hasMemberships);
     const hasOrganizationContext = Boolean(parseOrganizationContextCookie);
 
-    console.log(organizationContextCookie)
-
     return {
         hasToken,
         hasMembersips,

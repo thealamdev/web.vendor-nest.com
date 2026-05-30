@@ -26,6 +26,7 @@ import { logoutAction } from "@/app/actions/auth/vendor/logout-action";
 import { getCookie } from "@/lib/session";
 import { CookieEnum } from "@/app/enums/CookieEnum";
 import { getEcho } from "@/lib/echo";
+import { startLogoutListener } from "@/lib/logout-listener";
 
 export default function LayoutContext({
     children,
@@ -68,30 +69,63 @@ export default function LayoutContext({
         fetchUser();
     }, []);
 
+    const isLoggingOutRef = useRef(false);
+
+    // useEffect(() => {
+    //     if (!user?.id) return;
+
+    //     const channelName = `user.logout.${user.id}`;
+    //     let cleanup: (() => void) | null = null;
+
+    //     const subscribe = async () => {
+    //         const echoInstance = await getEcho();
+    //         if (!echoInstance) return;
+
+    //         // echoInstance.private(channelName).listen(".user.logout", (e: any) => {
+    //         //     toast.success("You have been logged out successfully.", {
+    //         //         onAutoClose: () => window.location.replace("/"),
+    //         //         duration: 1500,
+    //         //     });
+    //         // });
+
+    //         echoInstance.private(channelName).listen(".user.logout", (e: any) => {
+    //             toast.success("You have been logged out successfully.");
+    //             setTimeout(() => {
+    //                 window.location.replace("/");
+    //             }, 1000); // give toast 1s to show, then hard redirect
+    //         });
+
+    //         cleanup = () => echoInstance.leave(channelName);
+    //     };
+
+    //     subscribe();
+
+    //     return () => {
+    //         if (!isLoggingOutRef.current) {
+    //             cleanup?.();
+    //         }
+    //     };
+    // }, [user?.id]);
+
     useEffect(() => {
         if (!user?.id) return;
 
-        const channelName = `user.logout.${user.id}`;
-        let cleanup: (() => void) | null = null;
-
-        const subscribe = async () => {
-            const echoInstance = await getEcho();
-            if (!echoInstance) return;
-
-            echoInstance.private(channelName).listen(".user.logout", (e: any) => {
-                toast.success("You have been logged out successfully.");
-                window.location.href = "/";
-            });
-
-            cleanup = () => echoInstance.leave(channelName);
-        };
-
-        subscribe();
+        startLogoutListener(user.id);
 
         return () => {
-            cleanup?.();
+
         };
     }, [user?.id]);
+
+    const handleLogout = async () => {
+        isLoggingOutRef.current = true;
+        const res = await logoutAction();
+
+        if (!res.success) {
+            isLoggingOutRef.current = false;
+            toast.error("Logout failed. Please try again.");
+        }
+    };
 
     useEffect(() => {
         const handleOutsideClick = (e: MouseEvent) => {
@@ -117,15 +151,6 @@ export default function LayoutContext({
             document.removeEventListener("mousedown", handleOutsideClick);
         };
     }, []);
-
-    const handleLogout = async () => {
-        const res = await logoutAction();
-
-        if (res.success) {
-            setUser({ id: '', name: '', email: '' });
-            window.location.href = "/";
-        }
-    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
