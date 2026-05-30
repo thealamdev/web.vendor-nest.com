@@ -1,9 +1,10 @@
+import { Toaster } from 'sonner';
 import React, { ReactNode } from 'react'
 import LayoutContext from './layouts/LayoutContext'
-import RolePermissionProvider from '@/app/providers/RolePermissionProvider';
-import OrganizationProvier from '@/app/providers/OrganizationProvier';
 import QueryProvider from '@/app/providers/QueryProvider';
-import { Toaster } from 'sonner';
+import LogoutProvider from '@/app/providers/LogoutProvider';
+import OrganizationProvier from '@/app/providers/OrganizationProvier';
+import RolePermissionProvider from '@/app/providers/RolePermissionProvider';
 
 export default function DashbaordLayout({
     children,
@@ -12,16 +13,16 @@ export default function DashbaordLayout({
 }) {
     return (
         <QueryProvider>
-            <RolePermissionProvider>
-                <OrganizationProvier>
-                    <LayoutContext>
-                        {children}
-                    </LayoutContext>
-                </OrganizationProvier>
-            </RolePermissionProvider>
-            <Toaster richColors position="top-right" />
+            <LogoutProvider>
+                <RolePermissionProvider>
+                    <OrganizationProvier>
+                        <LayoutContext>
+                            {children}
+                        </LayoutContext>
+                    </OrganizationProvier>
+                </RolePermissionProvider>
+                <Toaster richColors position="top-right" />
+            </LogoutProvider>
         </QueryProvider>
-
-
     )
 }

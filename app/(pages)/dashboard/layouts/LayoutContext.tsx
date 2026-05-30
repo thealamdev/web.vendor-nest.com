@@ -3,6 +3,7 @@
 import { ReactNode, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
     LayoutDashboard,
@@ -15,7 +16,6 @@ import {
     ChevronDown,
     User,
     CreditCard,
-    ChevronRight,
     Files,
     ListOrdered,
 } from "lucide-react";
@@ -25,6 +25,7 @@ import { RolePermissionContext, RolePermissionResponse } from '@/app/context/Rol
 import { logoutAction } from "@/app/actions/auth/vendor/logout-action";
 import { getCookie } from "@/lib/session";
 import { CookieEnum } from "@/app/enums/CookieEnum";
+import { getEcho } from "@/lib/echo";
 
 export default function LayoutContext({
     children,
@@ -41,8 +42,9 @@ export default function LayoutContext({
 
     const notificationRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
-    const { permissions, isLoading } = useContext<RolePermissionResponse>(RolePermissionContext);
+    const { permissions } = useContext<RolePermissionResponse>(RolePermissionContext);
     const [user, setUser] = useState<Record<string, string>>({
+        id: '',
         name: '',
         email: ''
     });
@@ -61,15 +63,38 @@ export default function LayoutContext({
     useEffect(() => {
         const fetchUser = async () => {
             const res = await getCookie(CookieEnum.AUTH_COOKIE);
-            setUser(res.user)
-        }
-        fetchUser()
-    }, [])
+            setUser(res.user);
+        };
+        fetchUser();
+    }, []);
 
     useEffect(() => {
+        if (!user?.id) return;
 
+        const channelName = `user.logout.${user.id}`;
+        let cleanup: (() => void) | null = null;
+
+        const subscribe = async () => {
+            const echoInstance = await getEcho();
+            if (!echoInstance) return;
+
+            echoInstance.private(channelName).listen(".user.logout", (e: any) => {
+                toast.success("You have been logged out successfully.");
+                window.location.href = "/";
+            });
+
+            cleanup = () => echoInstance.leave(channelName);
+        };
+
+        subscribe();
+
+        return () => {
+            cleanup?.();
+        };
+    }, [user?.id]);
+
+    useEffect(() => {
         const handleOutsideClick = (e: MouseEvent) => {
-
             if (
                 notificationRef.current &&
                 !notificationRef.current.contains(e.target as Node)
@@ -95,8 +120,10 @@ export default function LayoutContext({
 
     const handleLogout = async () => {
         const res = await logoutAction();
+
         if (res.success) {
-            router.push('/');
+            setUser({ id: '', name: '', email: '' });
+            window.location.href = "/";
         }
     };
 
