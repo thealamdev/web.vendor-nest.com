@@ -1,14 +1,8 @@
 "use server";
 
-import { CookieEnum } from "@/app/enums/CookieEnum";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { logoutService } from "@/app/services/auth/vendor/logout-service";
 
 export const logoutAction = async () => {
-    const cookieStore = await cookies();
-
-    cookieStore.delete(CookieEnum.AUTH_COOKIE);
-    cookieStore.delete(CookieEnum.ORGANIZATION_CONTEXT);
-
-    redirect("/");
+    const res = await logoutService();
+    return res;
 };

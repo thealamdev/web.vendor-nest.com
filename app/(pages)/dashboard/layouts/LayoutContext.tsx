@@ -94,7 +94,10 @@ export default function LayoutContext({
     }, []);
 
     const handleLogout = async () => {
-        await logoutAction()
+        const res = await logoutAction();
+        if (res.success) {
+            router.push('/');
+        }
     };
 
     return (
@@ -136,7 +139,7 @@ export default function LayoutContext({
                 <div className="border-t border-gray-200 p-4">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition"
+                        className="w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition"
                     >
                         <LogOut size={18} />
                         Logout

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCookie } from "./session";
+import { getCookie, deleteCookie } from './session';
 import { CookieEnum } from "@/app/enums/CookieEnum";
 
 export const api = axios.create({
@@ -18,3 +18,19 @@ api.interceptors.request.use(async (config) => {
     }
     return config;
 });
+
+api.interceptors.response.use((response) => response, async (error) => {
+
+    if (error.response?.status === 401) {
+        const authCookie = await getCookie(CookieEnum.AUTH_COOKIE);
+        const orgContextCookie = await getCookie(CookieEnum.ORGANIZATION_CONTEXT);
+
+        if (authCookie || orgContextCookie) {
+            await deleteCookie(CookieEnum.AUTH_COOKIE);
+            await deleteCookie(CookieEnum.ORGANIZATION_CONTEXT);
+            window.location.href = "/";
+        }
+
+        return Promise.reject(error);
+    }
+})
