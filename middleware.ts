@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CookieEnum } from "./app/enums/CookieEnum";
 
-const PUBLIC_PATHS = ['/', '/auth/vendor/login', '/auth/vendor/register'];
+const PUBLIC_PATHS = ['/auth/vendor/login', '/auth/vendor/register'];
 const NO_ORG_CONTEXT_PATHS = ['/auth/vendor/organization', '/choose-organization'];
 const AUTH_PATHS = ['/dashboard'];
 
@@ -79,7 +79,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/',
         '/auth/vendor/login',
         '/auth/vendor/register',
         '/choose-organization',

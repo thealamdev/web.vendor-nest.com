@@ -1,3 +1,4 @@
+import { logoutAction } from "@/app/actions/auth/vendor/logout-action";
 import { getEcho } from "@/lib/echo";
 import { toast } from "sonner";
 
@@ -13,8 +14,10 @@ export async function startLogoutListener(userId: string) {
     const channelName = `user.logout.${userId}`;
     console.log("Starting logout listener on:", channelName);
 
-    echo.private(channelName).listen(".user.logout", (e: any) => {
+    echo.private(channelName).listen(".user.logout", async (e: any) => {
         console.log("LOGOUT EVENT FIRED:", e);
+        const res = await logoutAction();
+        console.log('logout listener',res)
         toast.success("You have been logged out from another device.");
 
         // Hard reload — completely outside React lifecycle
