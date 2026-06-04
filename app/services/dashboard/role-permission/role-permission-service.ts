@@ -1,4 +1,5 @@
 import { RolePermissionRequest, RolePermissionServerResponse } from "@/app/actions/dashboard/role-permission/role-permission-store-aciton"
+import { RolePermissionUpdateRequest } from "@/app/actions/dashboard/role-permission/role-permission-update-action";
 import { rolePermissionRepository } from "@/app/repositories/dashboard/role-permission/role-permission-repository"
 
 export type RolePermissionGetResponse = {
@@ -24,8 +25,13 @@ const store = async (request: RolePermissionRequest): Promise<ApiResponse<RolePe
     return res;
 }
 
+const update = async (request: RolePermissionUpdateRequest, ROLE_ID: string): Promise<ApiResponse<RolePermissionServerResponse>> => {
+    const res = await rolePermissionRepository.update(request, ROLE_ID);
+    return res;
+}
+
 export const rolePermissionService = {
     get: (ROLE_ID: string) => get(ROLE_ID),
     permissionsGroupByModule: () => permissionsGroupByModule(),
-    store: (request: RolePermissionRequest) => store(request)
+    update: (request: RolePermissionUpdateRequest, ROLE_ID: string) => update(request, ROLE_ID),
 }

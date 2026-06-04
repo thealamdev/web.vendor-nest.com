@@ -1,4 +1,5 @@
 import { RolePermissionRequest, RolePermissionServerResponse } from "@/app/actions/dashboard/role-permission/role-permission-store-aciton";
+import { RolePermissionUpdateRequest } from "@/app/actions/dashboard/role-permission/role-permission-update-action";
 import { PermissionGroupByModuleResponse, RolePermissionGetResponse } from "@/app/services/dashboard/role-permission/role-permission-service";
 import { ApiErrorRes } from "@/app/utils/ApiErrorRes";
 import { api } from "@/lib/api"
@@ -30,8 +31,18 @@ const store = async (request: RolePermissionRequest): Promise<ApiResponse<RolePe
     }
 }
 
+const update = async (request: RolePermissionUpdateRequest, ROLE_ID: string): Promise<ApiResponse<RolePermissionServerResponse>> => {
+    try {
+        const { data } = await api.put(`/user-management/role/update/${ROLE_ID}`, request);
+        return data;
+    } catch (error) {
+        return ApiErrorRes(error)
+    }
+}
+
 export const rolePermissionRepository = {
     get: (ROLE_ID: string) => get(ROLE_ID),
     permissionsGroupByModule: () => permissionsGroupByModule(),
-    store: (request: any) => store(request)
+    store: (request: any) => store(request),
+    update: (request: any, ROLE_ID: string) => update(request, ROLE_ID),
 }
