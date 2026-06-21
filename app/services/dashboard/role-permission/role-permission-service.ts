@@ -32,6 +32,7 @@ const update = async (request: RolePermissionUpdateRequest, ROLE_ID: string): Pr
 
 export const rolePermissionService = {
     get: (ROLE_ID: string) => get(ROLE_ID),
+    store: (request:RolePermissionRequest) => store(request),
     permissionsGroupByModule: () => permissionsGroupByModule(),
     update: (request: RolePermissionUpdateRequest, ROLE_ID: string) => update(request, ROLE_ID),
 }
